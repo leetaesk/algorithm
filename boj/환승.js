@@ -12,66 +12,60 @@ const input = `9 3 5
 
 const [N, K, M] = input[0].split(" ").map(Number);
 
-// 환승횟수 + 1 이 답임 ㅇㅇ
-let answer = -1;
+// 출발지가 곧 목적지인 경우 (예외 처리)
+if (N === 1) {
+    console.log(1);
+    process.exit(0);
+}
 
-// 양방향 그래프인듯? ㄴㄴ 단방향임. 중복 제거 set사용 => 양방향인듯 ㅋ
-let graph = Array.from({ length: N + 1 }, () => new Set());
+// N개의 '역' 노드 + M개의 '하이퍼튜브' 노드
+// 하이퍼튜브의 인덱스는 N + 1 부터 시작하도록 구성
+const graph = Array.from({ length: N + M + 1 }, () => []);
 
-for (let i = 1; i < input.length; i++) {
-    const arr = input[i].split(" ").map(Number);
+for (let i = 1; i <= M; i++) {
+    const stations = input[i].split(" ").map(Number);
+    const tubeNode = N + i; // 하이퍼튜브 자체를 새로운 노드로 취급
 
-    for (let left = 0; left < arr.length; left++) {
-        for (let right = left + 1; right < arr.length; right++) {
-            if (arr[left] === arr[right]) continue;
-            graph[arr[left]].add(arr[right]);
-            graph[arr[right]].add(arr[left]);
-        }
+    for (let j = 0; j < K; j++) {
+        const station = stations[j];
+        graph[station].push(tubeNode); // 역 -> 하이퍼튜브
+        graph[tubeNode].push(station); // 하이퍼튜브 -> 역
     }
 }
 
-const visited = Array.from({ length: N + 1 }, () => false);
-let queue = [];
-queue.push(1);
-visited[1] = true;
+// 메모리와 속도 최적화를 위해 Int32Array 사용
+const visited = new Int32Array(N + M + 1);
+const queue = new Int32Array(N + M + 1);
 
-// 환승센터갯수.
-let count = 0;
+let head = 0;
+let tail = 0;
 
-// console.log(graph);
-while (queue.length > 0) {
-    let isFound = false;
-    let nextqueue = [];
+// 1번 역에서 시작
+queue[tail++] = 1;
+visited[1] = 1; // 거리를 1부터 시작하여 방문 체크와 거리 계산을 동시에 처리
 
-    while (queue.length > 0) {
-        let now = queue.shift();
+let answer = -1;
 
-        // 현재역에서 갈 수 있는 곳들
-        for (let next of graph[now]) {
-            // 목적지임! 환승횟수 + 출발,도착역
-            if (next === N) {
-                answer = count + 2;
-                isFound = true;
-                break;
-            }
+while (head < tail) {
+    const now = queue[head++];
 
-            // 목적지 아닌데 방문한 적 없음 => nextQueue에 넣기
-            if (visited[next] === false) {
-                visited[next] = true;
-                nextqueue.push(next);
-            }
+    if (now === N) {
+        // [역]-[튜브]-[역] 순서로 이동하므로,
+        // 실제 거쳐간 '역'의 개수는 튜브를 포함한 총 이동 거리를 2로 나눈 몫에 1을 더한 값
+        answer = Math.floor(visited[now] / 2) + 1;
+        break;
+    }
+
+    const len = graph[now].length;
+    for (let i = 0; i < len; i++) {
+        const next = graph[now][i];
+
+        // 방문하지 않은 곳이면 큐에 추가
+        if (visited[next] === 0) {
+            visited[next] = visited[now] + 1;
+            queue[tail++] = next;
         }
-
-        if (isFound) break;
     }
-    if (isFound) break;
-
-    // 큐를 한바퀴 다 돌았는데도 못찾았음 => queue갱신
-    for (let station of nextqueue) {
-        queue.push(station);
-    }
-
-    count++;
 }
 
 console.log(answer);
