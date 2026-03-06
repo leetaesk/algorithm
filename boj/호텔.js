@@ -1,11 +1,43 @@
 const fs = require("fs");
 // const input = fs.readFileSync("/dev/stdin").toString().trim().split("\n");
-const input = `12 2
-3 5
-1 1`
+const input = `100 6
+4 9
+9 11
+3 4
+8 7
+1 2
+9 8`
     .toString()
     .trim()
     .split("\n");
+
+// 목표고객 C 1000. N 20
+const [C, N] = input[0].split(" ").map(Number);
+const costs = input.slice(1).map((s) => s.split(" ").map(Number));
+
+let maxPeople = costs.reduce((acc, cur) => Math.max(acc, cur[1]), 0);
+
+// dp[i] = i명유치하는데 드는 비용의 최솟값
+// Infinity로 초기화
+// 적어도 C명이기 때문에 여유롭게 해야 함 ㅇㅇ
+const dp = Array.from({ length: C + maxPeople }, () => Infinity);
+
+dp[0] = 0;
+
+for (let i = 0; i < dp.length; i++) {
+    for (let [cost, people] of costs) {
+        if (i + people < dp.length) {
+            dp[i + people] = Math.min(dp[i] + cost, dp[i + people]);
+        }
+    }
+}
+
+console.log(dp.slice(C).reduce((acc, cur) => Math.min(acc, cur), Infinity));
+
+/**
+ * 기존코드
+ * const fs = require("fs");
+const input = fs.readFileSync("/dev/stdin").toString().trim().split("\n");
 
 // 목표고객 C 1000. N 20
 const [C, N] = input[0].split(" ").map(Number);
@@ -24,3 +56,5 @@ for (let [cost, user] of costs) {
 }
 
 console.log(dp.slice(C).reduce((acc, cur) => Math.min(acc, cur)));
+
+ */
