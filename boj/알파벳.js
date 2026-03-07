@@ -19,30 +19,33 @@ set.add(map[0][0]);
 
 const directions = [
     [0, 1],
+    [1, 0],
     [0, -1],
-    [1, 0],
-    [1, 0],
+    [-1, 0],
 ];
 
 const isIn = (i, j) => i >= 0 && i < R && j >= 0 && j < C;
 
 let answer = 1;
 
-const dfs = (i, j, count) => {
+const dfs = (i, j, count, beforeDir) => {
     answer = Math.max(answer, count);
 
-    for (let [di, dj] of directions) {
+    for (let k = 0; k < directions.length; k++) {
+        if ((k + 2) % 4 === beforeDir) continue;
+
+        const [di, dj] = directions[k];
         const [ni, nj] = [i + di, j + dj];
 
         // 범위 안이고 map 안이라면
         if (isIn(ni, nj) && set.has(map[ni][nj]) === false) {
             set.add(map[ni][nj]);
-            dfs(ni, nj, count + 1);
+            dfs(ni, nj, count + 1, k);
             set.delete(map[ni][nj]);
         }
     }
 };
 
-dfs(0, 0, 1);
+dfs(0, 0, 1, -1);
 
 console.log(answer);

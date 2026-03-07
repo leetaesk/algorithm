@@ -18,7 +18,7 @@ const dpDecrease = Array(N).fill(1);
 for (let i = 0; i < N; i++) {
     // 내 왼쪽 탐색
     for (let j = 0; j < i; j++) {
-        if (arr[j] < arr[i]) {
+        if (arr[i] > arr[j]) {
             dpIncrease[i] = Math.max(dpIncrease[i], dpIncrease[j] + 1);
         }
     }
